@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/inventory_request_model.dart';
 import '../../domain/entities/inventory_item_entity.dart';
@@ -107,6 +108,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     InventoryUpdatedFromStreamEvent event,
     Emitter<InventoryState> emit,
   ) {
+    debugPrint('[BLOC UI SUBSCRIBER] 🔄 Inventory stream emitted ${event.items.length} items. Updating UI state instantly.');
     if (state is InventorySuccessState) {
       final current = state as InventorySuccessState;
       final filtered = _applyFilters(event.items, current.searchQuery, current.selectedCategory);
@@ -127,6 +129,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     SyncStatusUpdatedFromStreamEvent event,
     Emitter<InventoryState> emit,
   ) {
+    debugPrint('[BLOC UI SUBSCRIBER] 📡 SyncStatus updated: Mode=${event.syncStatus.mode.name}, Broker=${event.syncStatus.mqttBroker}, Message="${event.syncStatus.statusMessage}"');
     _currentSyncStatus = event.syncStatus;
     if (state is InventorySuccessState) {
       final current = state as InventorySuccessState;

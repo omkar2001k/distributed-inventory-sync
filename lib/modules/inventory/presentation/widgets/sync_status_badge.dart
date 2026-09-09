@@ -20,7 +20,8 @@ class SyncStatusBadge extends StatefulWidget {
   State<SyncStatusBadge> createState() => _SyncStatusBadgeState();
 }
 
-class _SyncStatusBadgeState extends State<SyncStatusBadge> with SingleTickerProviderStateMixin {
+class _SyncStatusBadgeState extends State<SyncStatusBadge>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -55,21 +56,11 @@ class _SyncStatusBadgeState extends State<SyncStatusBadge> with SingleTickerProv
   }
 
   String get _statusLabel {
-    if (widget.isCompact) {
-      switch (widget.syncStatus.mode) {
-        case SyncMode.online:
-          return 'Online';
-        case SyncMode.localNetwork:
-          return 'Local UDP';
-        case SyncMode.offline:
-          return 'Offline';
-      }
-    }
     switch (widget.syncStatus.mode) {
       case SyncMode.online:
-        return 'Online (Cloud MQTT)';
+        return 'Online';
       case SyncMode.localNetwork:
-        return 'Local Network (UDP P2P)';
+        return widget.isCompact ? 'Local Network' : 'Local Network Only';
       case SyncMode.offline:
         return 'Offline';
     }

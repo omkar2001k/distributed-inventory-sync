@@ -1,10 +1,14 @@
 # 📦 SyncStock: Distributed Inventory Sync
 
 [![Flutter Analyze](https://img.shields.io/badge/Flutter%20Analyze-0%20Issues-brightgreen.svg)](https://flutter.dev)
-[![Tests Passing](https://img.shields.io/badge/Unit%20Tests-12%2F12%20Passing-brightgreen.svg)](https://flutter.dev)
+[![Tests Passing](https://img.shields.io/badge/Unit%20Tests-14%2F14%20Passing-brightgreen.svg)](https://flutter.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Flutter%20Clean%20Architecture-blue.svg)](https://flutter.dev)
 [![State Management](https://img.shields.io/badge/State%20Management-BLoC-blueviolet.svg)](https://bloclibrary.dev)
 [![Local Storage](https://img.shields.io/badge/Local%20Storage-Hive-orange.svg)](https://pub.dev/packages/hive)
+
+<p align="center">
+  <img src="screenshots/dashboard.png" width="380" alt="SyncStock Distributed Inventory Sync App" />
+</p>
 
 ---
 
@@ -18,7 +22,7 @@
 ## 🎯 1. Objective & Challenge Overview
 
 Warehouse workers operating on different mobile devices must maintain synchronized inventory counts across three real-world operational scenarios:
-1. **Scenario 1: Cloud Sync (MQTT)** — Both workers have active internet. Changes synchronize instantaneously over a lightweight, public MQTT broker (`broker.emqx.io`).
+1. **Scenario 1: Cloud Sync (MQTT)** — Both workers have active internet. Changes synchronize instantaneously over a lightweight, public MQTT broker (`test.mosquitto.org`).
 2. **Scenario 2: Offline Queue (Hive)** — One worker loses internet connectivity. The UI continues to function with zero latency; mutations are saved locally to Hive and queued in an offline sync box. Once connection is restored, the `SyncManager` automatically publishes queued messages in FIFO order.
 3. **Scenario 3: Local Fallback (UDP P2P)** — Both workers lose internet access but remain on the same local Wi-Fi router. Inventory mutations are broadcast peer-to-peer over UDP (`RawDatagramSocket`), keeping screens in sync without requiring any cloud server or third-party BaaS.
 
@@ -143,7 +147,7 @@ flowchart TD
 
 ### When Internet Restores (Auto-Drain Workflow):
 1. `ConnectivityService` alerts `InventoryRepositoryImpl` of active internet.
-2. `MqttService` connects/reconnects to `broker.emqx.io`.
+2. `MqttService` connects/reconnects to `test.mosquitto.org`.
 3. The repository checks `localDataSource.pendingQueueCount`.
 4. If items exist, `syncOfflineQueue()` iterates through pending mutations in FIFO order, publishing each to the cloud topic.
 5. Successfully published items are removed from the Hive queue box, and the UI status badge dynamically updates from 🔴/🟡 to 🟢 Online.

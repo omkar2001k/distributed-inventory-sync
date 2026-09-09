@@ -42,7 +42,9 @@ class InventoryItemCard extends StatelessWidget {
       statusIcon = Icons.check_circle_outline_rounded;
     }
 
-    final formattedTime = DateFormat('HH:mm:ss').format(item.lastModified.toLocal());
+    final formattedTime = DateFormat(
+      'HH:mm:ss',
+    ).format(item.lastModified.toLocal());
 
     return Card(
       margin: margin ?? const EdgeInsets.only(bottom: 12),
@@ -56,7 +58,10 @@ class InventoryItemCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
@@ -72,7 +77,10 @@ class InventoryItemCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(20),
                     borderRadius: BorderRadius.circular(8),
@@ -98,57 +106,81 @@ class InventoryItemCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Item Name & SKU
-            Text(
-              item.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'SKU: ${item.sku}',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white54 : Colors.black54,
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.w500,
-              ),
+            // Item Icon + Name & SKU
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withAlpha(20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(item.category),
+                    size: 24,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'SKU: ${item.sku}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
 
-            // Bottom Row: Stock Quantity & Stepper Controls
+            // Bottom Row: Quantity & "+" / "-" Stepper Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
                     Text(
-                      'AVAILABLE UNITS',
+                      'Quantity: ',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white38 : Colors.black45,
-                        letterSpacing: 0.5,
+                        color: isDark ? Colors.white70 : Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                      transitionBuilder: (child, animation) =>
+                          ScaleTransition(scale: animation, child: child),
                       child: Text(
                         '${item.quantity}',
                         key: ValueKey<int>(item.quantity),
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 22,
                           fontWeight: FontWeight.w900,
                           color: statusColor,
-                          letterSpacing: -0.5,
                         ),
                       ),
                     ),
@@ -158,7 +190,7 @@ class InventoryItemCard extends StatelessWidget {
                   children: [
                     QuantityCounterButton(
                       icon: Icons.remove,
-                      tooltip: 'Decrease Quantity',
+                      tooltip: 'Decrease (-)',
                       isEnabled: item.quantity > 0,
                       onPressed: onDecrement,
                       color: AppTheme.statusOffline,
@@ -166,7 +198,7 @@ class InventoryItemCard extends StatelessWidget {
                     const SizedBox(width: 10),
                     QuantityCounterButton(
                       icon: Icons.add,
-                      tooltip: 'Increase Quantity',
+                      tooltip: 'Increase (+)',
                       onPressed: onIncrement,
                       color: AppTheme.statusOnline,
                     ),
@@ -175,7 +207,12 @@ class InventoryItemCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Divider(height: 12, color: isDark ? Colors.white.withAlpha(15) : const Color(0xFFF1F5F9)),
+            Divider(
+              height: 12,
+              color: isDark
+                  ? Colors.white.withAlpha(15)
+                  : const Color(0xFFF1F5F9),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -199,5 +236,24 @@ class InventoryItemCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'equipment':
+        return Icons.precision_manufacturing_rounded;
+      case 'electronics':
+        return Icons.qr_code_scanner_rounded;
+      case 'packaging':
+        return Icons.inventory_2_rounded;
+      case 'safety':
+        return Icons.health_and_safety_rounded;
+      case 'power & battery':
+        return Icons.battery_charging_full_rounded;
+      case 'storage':
+        return Icons.shelves;
+      default:
+        return Icons.category_rounded;
+    }
   }
 }

@@ -18,9 +18,10 @@ class SyncMessageModel {
     required this.version,
   });
 
-  /// Defensive JSON parsing ensuring malformed packets don't crash the app
-  factory SyncMessageModel.fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
+  /// Defensive JSON parsing supporting both dynamic Maps from Hive (Web & Native)
+  /// and standard JSON deserialization without type cast exceptions.
+  factory SyncMessageModel.fromJson(dynamic json) {
+    if (json == null || json is! Map) {
       return SyncMessageModel(
         messageId: '',
         originDeviceId: '',
@@ -31,9 +32,11 @@ class SyncMessageModel {
       );
     }
 
+    final map = Map<String, dynamic>.from(json);
+
     DateTime parsedDate;
     try {
-      final dynamic rawDate = json['timestamp'];
+      final dynamic rawDate = map['timestamp'];
       if (rawDate is String) {
         parsedDate = DateTime.tryParse(rawDate)?.toUtc() ?? DateTime.now().toUtc();
       } else {
@@ -43,13 +46,18 @@ class SyncMessageModel {
       parsedDate = DateTime.now().toUtc();
     }
 
+    final rawItem = map['item'];
+    final itemModel = InventoryItemModel.fromJson(
+      rawItem is Map ? Map<String, dynamic>.from(rawItem) : null,
+    );
+
     return SyncMessageModel(
-      messageId: json['messageId'] as String? ?? '',
-      originDeviceId: json['originDeviceId'] as String? ?? '',
-      action: json['action'] as String? ?? 'update_quantity',
-      item: InventoryItemModel.fromJson(json['item'] as Map<String, dynamic>?),
+      messageId: map['messageId'] as String? ?? '',
+      originDeviceId: map['originDeviceId'] as String? ?? '',
+      action: map['action'] as String? ?? 'update_quantity',
+      item: itemModel,
       timestamp: parsedDate,
-      version: (json['version'] as num?)?.toInt() ?? 1,
+      version: (map['version'] as num?)?.toInt() ?? 1,
     );
   }
 

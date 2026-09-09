@@ -7,11 +7,9 @@ class AppConstants {
   static const String appTitle = 'SyncStock - Distributed Inventory Sync';
 
   // MQTT Broker Configuration
-  // Primary broker broker.emqx.io with hivemq and mosquitto as resilient fallbacks
-  static const String mqttBroker = 'broker.emqx.io';
+  // Dedicated exclusively to free, public broker: test.mosquitto.org
+  static const String mqttBroker = 'test.mosquitto.org';
   static const List<String> fallbackMqttBrokers = [
-    'broker.emqx.io',
-    'broker.hivemq.com',
     'test.mosquitto.org',
   ];
   static const int mqttPort = 1883;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../../../../core/network/http_service.dart';
 import '../../../../core/network/mqtt_service.dart';
 import '../../../../core/network/udp_service.dart';
@@ -6,7 +7,8 @@ import '../models/inventory_item_model.dart';
 import '../models/inventory_response_model.dart';
 import '../models/sync_message_model.dart';
 
-/// Remote data source integrating MQTT Cloud Sync, Local UDP Broadcast, and HTTP catalog.
+/// Remote data source integrating MQTT Cloud Sync (test.mosquitto.org),
+/// Local UDP Broadcast, and HTTP catalog.
 class InventoryRemoteDataSource {
   final MqttService mqttService;
   final UdpService udpService;
@@ -26,18 +28,22 @@ class InventoryRemoteDataSource {
 
   void _listenToSources() {
     _mqttSubscription = mqttService.messageStream.listen((message) {
+      debugPrint('[REMOTE DATA SOURCE] 📨 MQTT Subscriber received message: "${message.item.name}" (Qty: ${message.item.quantity}, Action: ${message.action}) -> Forwarding to repository');
       _remoteMessageController.add(message);
     });
 
     _udpSubscription = udpService.messageStream.listen((message) {
+      debugPrint('[REMOTE DATA SOURCE] 📡 UDP Subscriber received message: "${message.item.name}" -> Forwarding to repository');
       _remoteMessageController.add(message);
     });
   }
 
   Stream<SyncMessageModel> get remoteMessageStream => _remoteMessageController.stream;
   Stream<bool> get mqttConnectionStateStream => mqttService.connectionStateStream;
+  Stream<MqttConnectionStatus> get mqttStatusStream => mqttService.statusStream;
 
   bool get isMqttConnected => mqttService.isConnected;
+  MqttConnectionStatus get mqttStatus => mqttService.status;
 
   Future<bool> connectMqtt() => mqttService.connect();
   void disconnectMqtt() => mqttService.disconnect();
@@ -45,7 +51,7 @@ class InventoryRemoteDataSource {
   Future<bool> startUdpListening() => udpService.startListening();
   void stopUdpListening() => udpService.stop();
 
-  /// Publishes a change to the MQTT cloud broker.
+  /// Publishes a change to the MQTT cloud broker (test.mosquitto.org).
   Future<bool> publishMqtt(SyncMessageModel message) {
     return mqttService.publish(message);
   }

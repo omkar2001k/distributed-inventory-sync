@@ -1,6 +1,8 @@
+import '../../../../core/constants/app_constants.dart';
+
 /// The visual and operational sync states for the application.
 enum SyncMode {
-  /// 🟢 Online: Communicating in real-time over MQTT Cloud broker.
+  /// 🟢 Online: Communicating in real-time over MQTT Cloud broker (test.mosquitto.org).
   online,
 
   /// 🟡 Local Network Only: Communicating peer-to-peer via UDP broadcast on local Wi-Fi.
@@ -18,6 +20,8 @@ class SyncStatusEntity {
   final String activeTransport;
   final String currentDeviceId;
   final DateTime lastSyncTime;
+  final String mqttBroker;
+  final bool isMqttConnected;
 
   const SyncStatusEntity({
     required this.mode,
@@ -26,6 +30,8 @@ class SyncStatusEntity {
     required this.activeTransport,
     required this.currentDeviceId,
     required this.lastSyncTime,
+    this.mqttBroker = AppConstants.mqttBroker,
+    this.isMqttConnected = false,
   });
 
   SyncStatusEntity copyWith({
@@ -35,6 +41,8 @@ class SyncStatusEntity {
     String? activeTransport,
     String? currentDeviceId,
     DateTime? lastSyncTime,
+    String? mqttBroker,
+    bool? isMqttConnected,
   }) {
     return SyncStatusEntity(
       mode: mode ?? this.mode,
@@ -43,6 +51,8 @@ class SyncStatusEntity {
       activeTransport: activeTransport ?? this.activeTransport,
       currentDeviceId: currentDeviceId ?? this.currentDeviceId,
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,
+      mqttBroker: mqttBroker ?? this.mqttBroker,
+      isMqttConnected: isMqttConnected ?? this.isMqttConnected,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../domain/entities/inventory_item_entity.dart';
 import '../../domain/entities/sync_status_entity.dart';
@@ -83,8 +84,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
     switch (mode) {
       case SyncMode.online:
-        transportDescription = 'MQTT Cloud Broker (broker.emqx.io)';
-        statusMessage = pendingCount > 0 ? 'Syncing $pendingCount queued items...' : 'Connected in real-time';
+        transportDescription = 'MQTT Cloud Broker (${AppConstants.mqttBroker}:1883)';
+        statusMessage = pendingCount > 0
+            ? 'Syncing $pendingCount queued items via ${AppConstants.mqttBroker}...'
+            : 'Connected to ${AppConstants.mqttBroker}';
         break;
       case SyncMode.localNetwork:
         transportDescription = 'UDP Broadcast (255.255.255.255:8888)';
@@ -92,7 +95,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
         break;
       case SyncMode.offline:
         transportDescription = 'Local Hive Cache';
-        statusMessage = pendingCount > 0 ? '$pendingCount changes queued locally' : 'Offline mode active';
+        statusMessage = pendingCount > 0
+            ? '$pendingCount changes queued locally'
+            : (remoteDataSource.isMqttConnected ? 'Offline mode forced' : 'Disconnected from ${AppConstants.mqttBroker}');
         break;
     }
 
@@ -104,6 +109,8 @@ class InventoryRepositoryImpl implements InventoryRepository {
         activeTransport: transportDescription,
         currentDeviceId: _currentDeviceId,
         lastSyncTime: DateTime.now(),
+        mqttBroker: AppConstants.mqttBroker,
+        isMqttConnected: remoteDataSource.isMqttConnected,
       ),
     );
 
@@ -141,10 +148,14 @@ class InventoryRepositoryImpl implements InventoryRepository {
   Future<void> _handleIncomingRemoteMessage(SyncMessageModel message) async {
     // 1. Ignore messages originated from this device to prevent infinite bounce loops
     if (message.originDeviceId == _currentDeviceId) {
+      debugPrint('[REPO SUBSCRIBER] 🔁 [Self-Echo Loop Guard] Message originated from this device ($_currentDeviceId). Local state is already authoritative. Skipping.');
       return;
     }
 
-    debugPrint('[Repo] Received remote update for item ${message.item.id} from ${message.originDeviceId}');
+    debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    debugPrint('[REPO SUBSCRIBER] ⚡ [Remote Update from Peer] Arrived from device: "${message.originDeviceId}"');
+    debugPrint('   • Item: "${message.item.name}" (ID: ${message.item.id})');
+    debugPrint('   • Remote Qty: ${message.item.quantity} | Version: ${message.item.version}');
 
     final currentItems = await localDataSource.getAllItems();
     final existingIndex = currentItems.indexWhere((i) => i.id == message.item.id);
@@ -165,13 +176,16 @@ class InventoryRepositoryImpl implements InventoryRepository {
           message.originDeviceId.compareTo(_currentDeviceId) > 0;
 
       if (isNewerVersion || isSameVersionNewerTime || isTieBreakerWinner) {
+        debugPrint('[REPO SUBSCRIBER] ✅ Update accepted! (Remote ver ${message.item.version} >= Local ver ${existingItem.version})');
+        debugPrint('[REPO SUBSCRIBER] 💾 Saving to local database & notifying stream subscribers for instant UI update...');
         await localDataSource.saveItem(message.item);
         _notifyInventoryChange();
       } else {
-        debugPrint('[Repo] Rejected older update for item ${message.item.id}');
+        debugPrint('[REPO SUBSCRIBER] 🛑 Rejected older update for item ${message.item.id} (Local ver ${existingItem.version} > Remote ver ${message.item.version})');
       }
     } else {
       // New item added by peer
+      debugPrint('[REPO SUBSCRIBER] ➕ New catalog item added by peer device "${message.originDeviceId}". Saving and notifying UI...');
       await localDataSource.saveItem(message.item);
       _notifyInventoryChange();
     }
@@ -214,6 +228,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
       // 1. Save immediately to local Hive cache (Optimistic UI update)
       await localDataSource.saveItem(updatedItem);
+      debugPrint('[REPO ACTION] 💾 Local change saved: "${updatedItem.name}" (${current.quantity} -> ${updatedItem.quantity}, ver: ${updatedItem.version}).');
       _notifyInventoryChange();
 
       // 2. Prepare network payload
@@ -228,13 +243,17 @@ class InventoryRepositoryImpl implements InventoryRepository {
 
       // 3. Determine transmission strategy based on current connectivity
       final activeMode = await _determineCurrentMode();
+      debugPrint('[REPO ACTION] 🚀 Transmitting mutation via $activeMode (Target MQTT: ${AppConstants.mqttBroker})');
 
       switch (activeMode) {
         case SyncMode.online:
           final published = await remoteDataSource.publishMqtt(syncMessage);
           if (!published) {
+            debugPrint('[REPO ACTION] ⚠️ MQTT publish returned false. Enqueuing into local Hive offline queue.');
             // If publish failed unexpectedly, queue for offline retry
             await localDataSource.addToSyncQueue(syncMessage);
+          } else {
+            debugPrint('[REPO ACTION] ✅ Successfully published mutation to ${AppConstants.mqttBroker}!');
           }
           break;
 

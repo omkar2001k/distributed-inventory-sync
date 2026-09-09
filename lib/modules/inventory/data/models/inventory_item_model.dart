@@ -23,8 +23,8 @@ class InventoryItemModel {
   });
 
   /// Defensive JSON deserialization with proper null safety and fallback values
-  factory InventoryItemModel.fromJson(Map<String, dynamic>? json) {
-    if (json == null) {
+  factory InventoryItemModel.fromJson(dynamic json) {
+    if (json == null || json is! Map) {
       return InventoryItemModel(
         id: '',
         name: 'Unknown Item',
@@ -37,9 +37,11 @@ class InventoryItemModel {
       );
     }
 
+    final map = Map<String, dynamic>.from(json);
+
     DateTime parsedDate;
     try {
-      final dynamic rawDate = json['lastModified'];
+      final dynamic rawDate = map['lastModified'];
       if (rawDate is String) {
         parsedDate = DateTime.tryParse(rawDate)?.toUtc() ?? DateTime.now().toUtc();
       } else if (rawDate is int) {
@@ -52,14 +54,14 @@ class InventoryItemModel {
     }
 
     return InventoryItemModel(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? 'Unnamed Item',
-      sku: json['sku'] as String? ?? 'SKU-NONE',
-      category: json['category'] as String? ?? 'General',
-      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-      minStock: (json['minStock'] as num?)?.toInt() ?? 5,
+      id: map['id'] as String? ?? '',
+      name: map['name'] as String? ?? 'Unnamed Item',
+      sku: map['sku'] as String? ?? 'SKU-NONE',
+      category: map['category'] as String? ?? 'General',
+      quantity: (map['quantity'] as num?)?.toInt() ?? 0,
+      minStock: (map['minStock'] as num?)?.toInt() ?? 5,
       lastModified: parsedDate,
-      version: (json['version'] as num?)?.toInt() ?? 1,
+      version: (map['version'] as num?)?.toInt() ?? 1,
     );
   }
 

@@ -125,7 +125,7 @@ class NetworkSimulationBar extends StatelessWidget {
                 const SizedBox(width: 8),
                 _buildModeChip(
                   context: context,
-                  label: 'Force Cloud MQTT',
+                  label: 'Force Cloud MQTT (test.mosquitto.org)',
                   icon: Icons.cloud_outlined,
                   color: AppTheme.statusOnline,
                   isSelected: syncStatus.mode == SyncMode.online,

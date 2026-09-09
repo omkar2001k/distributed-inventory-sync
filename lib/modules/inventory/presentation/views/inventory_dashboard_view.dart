@@ -5,10 +5,10 @@ import '../bloc/inventory_bloc.dart';
 import '../bloc/inventory_event.dart';
 import '../bloc/inventory_state.dart';
 import '../../domain/entities/sync_status_entity.dart';
-import '../widgets/add_item_dialog.dart';
 import '../widgets/empty_inventory_view.dart';
 import '../widgets/inventory_item_card.dart';
 import '../widgets/metric_card.dart';
+import '../widgets/mqtt_connection_banner.dart';
 import '../widgets/network_simulation_bar.dart';
 import '../widgets/sync_status_badge.dart';
 
@@ -39,23 +39,6 @@ class _InventoryDashboardViewState extends State<InventoryDashboardView> {
     context.read<InventoryBloc>().add(
       FilterInventoryEvent(selectedCategory: category),
     );
-  }
-
-  Future<void> _openAddItemDialog() async {
-    final newItem = await showDialog(
-      context: context,
-      builder: (context) => const AddItemDialog(),
-    );
-
-    if (newItem != null && mounted) {
-      context.read<InventoryBloc>().add(AddNewInventoryItemEvent(newItem));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Item "${newItem.name}" added to catalog'),
-          backgroundColor: AppTheme.statusOnline,
-        ),
-      );
-    }
   }
 
   @override
@@ -240,13 +223,33 @@ class _InventoryDashboardViewState extends State<InventoryDashboardView> {
                   },
                   child: CustomScrollView(
                     slivers: [
+                      // Live MQTT Broker Connection Status
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            horizontalPadding,
+                            10,
+                            horizontalPadding,
+                            0,
+                          ),
+                          child: MqttConnectionBanner(
+                            syncStatus: state.syncStatus,
+                            onReconnectPressed: () {
+                              context.read<InventoryBloc>().add(
+                                const TriggerOfflineSyncEvent(),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+
                       // 1. Interactive Simulation Testing Panel
                       if (_showSimulationPanel)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(
                               horizontalPadding,
-                              10,
+                              6,
                               horizontalPadding,
                               6,
                             ),
@@ -576,7 +579,7 @@ class _InventoryDashboardViewState extends State<InventoryDashboardView> {
                           ),
                         ),
 
-                      const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
                     ],
                   ),
                 );
@@ -586,11 +589,6 @@ class _InventoryDashboardViewState extends State<InventoryDashboardView> {
             },
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddItemDialog,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('New SKU'),
       ),
     );
   }

@@ -10,7 +10,8 @@ void main() {
     expect(AppConstants.appName, 'SyncStock');
     expect(AppConstants.mqttPort, 1883);
     expect(AppConstants.udpPort, 8888);
-    expect(AppConstants.fallbackMqttBrokers.length, greaterThanOrEqualTo(2));
+    expect(AppConstants.mqttBroker, 'test.mosquitto.org');
+    expect(AppConstants.fallbackMqttBrokers, ['test.mosquitto.org']);
   });
 
   testWidgets('SyncStatusBadge renders in ultra-compact mode on mobile without overflowing', (WidgetTester tester) async {
