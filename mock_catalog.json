@@ -1,0 +1,72 @@
+[
+  {
+    "id": "item-001",
+    "name": "Heavy Duty Pallet Jack (2500kg)",
+    "sku": "WH-EQ-101",
+    "category": "Equipment",
+    "quantity": 8,
+    "minStock": 3,
+    "lastModified": "2026-09-08T10:00:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-002",
+    "name": "Wireless Barcode Scanner 2D",
+    "sku": "WH-SC-204",
+    "category": "Electronics",
+    "quantity": 24,
+    "minStock": 10,
+    "lastModified": "2026-09-08T11:00:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-003",
+    "name": "Thermal Shipping Labels 4x6 (Roll)",
+    "sku": "WH-PKG-301",
+    "category": "Packaging",
+    "quantity": 140,
+    "minStock": 50,
+    "lastModified": "2026-09-08T12:00:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-004",
+    "name": "High-Visibility Safety Vest (L)",
+    "sku": "WH-SAF-405",
+    "category": "Safety",
+    "quantity": 42,
+    "minStock": 15,
+    "lastModified": "2026-09-08T12:15:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-005",
+    "name": "Heavy-Duty Stretch Wrap Film 500m",
+    "sku": "WH-PKG-309",
+    "category": "Packaging",
+    "quantity": 18,
+    "minStock": 12,
+    "lastModified": "2026-09-08T12:30:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-006",
+    "name": "Lithium-Ion Forklift Battery Pack",
+    "sku": "WH-EQ-109",
+    "category": "Equipment",
+    "quantity": 3,
+    "minStock": 2,
+    "lastModified": "2026-09-08T12:45:00.000Z",
+    "version": 1
+  },
+  {
+    "id": "item-007",
+    "name": "Industrial Anti-Fatigue Floor Mat",
+    "sku": "WH-SAF-412",
+    "category": "Safety",
+    "quantity": 15,
+    "minStock": 8,
+    "lastModified": "2026-09-08T13:00:00.000Z",
+    "version": 1
+  }
+]
